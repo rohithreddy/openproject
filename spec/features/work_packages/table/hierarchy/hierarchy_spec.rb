@@ -126,7 +126,7 @@ describe 'Work Package table hierarchy', js: true do
       # Hierarchy disabled, expect wp_inter before wp_root
       wp_table.visit_query query
       wp_table.expect_work_package_listed(wp_inter, wp_root, wp_leaf)
-      wp_table.expect_work_package_order(wp_inter.id, wp_root.id, wp_leaf.id)
+      wp_table.expect_work_package_order(wp_root, wp_inter, wp_leaf)
 
       hierarchy.expect_no_hierarchies
 
@@ -170,7 +170,7 @@ describe 'Work Package table hierarchy', js: true do
       FactoryBot.create(:work_package, subject: 'leaf', project: project, parent: inter)
     end
     let!(:root) do
-      FactoryBot.create(:work_package, project: project)
+      FactoryBot.create(:work_package, subject: 'root', project: project)
     end
 
     let(:user) do
@@ -184,7 +184,7 @@ describe 'Work Package table hierarchy', js: true do
 
     let!(:query) do
       query              = FactoryBot.build(:query, user: user, project: project)
-      query.column_names = ['subject', 'assigned_to']
+      query.column_names = ['id', 'subject', 'assigned_to']
       query.filters.clear
       query.sort_criteria = [['assigned_to', 'asc']]
       query.show_hierarchies = false
@@ -199,8 +199,12 @@ describe 'Work Package table hierarchy', js: true do
       wp_table.expect_work_package_listed(leaf_assigned, inter_assigned, root_assigned)
 
       wp_table.expect_work_package_order(
-        leaf_assigned.id, inter_assigned.id, root_assigned.id,
-        leaf.id, inter.id, root.id
+        root_assigned,
+        inter_assigned,
+        leaf_assigned,
+        inter,
+        leaf,
+        root
       )
 
       # Hierarchy should be disabled
@@ -219,12 +223,12 @@ describe 'Work Package table hierarchy', js: true do
       # |  |  ├─ leaf
       # ├──root
       wp_table.expect_work_package_order(
-        root_assigned.id,
-        inter_assigned.id,
-        inter.id,
-        leaf_assigned.id,
-        leaf.id,
-        root.id
+        root_assigned,
+        inter_assigned,
+        inter,
+        leaf_assigned,
+        leaf,
+        root
       )
 
       # Test collapsing of rows
@@ -246,20 +250,24 @@ describe 'Work Package table hierarchy', js: true do
       # |  |  ├─ leaf_assigned
       # |  ├─ inter_assigned
       wp_table.expect_work_package_order(
-        root.id,
-        root_assigned.id,
-        inter.id,
-        inter_assigned.id,
-        leaf.id,
-        leaf_assigned.id
+        root_assigned,
+        inter_assigned,
+        inter,
+        leaf_assigned,
+        leaf,
+        root
       )
 
       # Disable hierarchy mode
       hierarchy.disable_hierarchy
 
       wp_table.expect_work_package_order(
-        leaf.id, inter.id, root.id,
-        leaf_assigned.id, inter_assigned.id, root_assigned.id
+        root_assigned,
+        inter_assigned,
+        leaf_assigned,
+        inter,
+        leaf,
+        root
       )
     end
   end
