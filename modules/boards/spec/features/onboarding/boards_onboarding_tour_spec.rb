@@ -27,6 +27,7 @@
 #++
 
 require 'spec_helper'
+require_relative './../support/onboarding_steps'
 
 describe 'boards onboarding tour', js: true do
   let(:next_button) { find('.enjoyhint_next_btn') }
@@ -85,30 +86,22 @@ describe 'boards onboarding tour', js: true do
 
       step_through_onboarding_wp_tour demo_project, wp_1
 
-      next_button.click
-      expect(page).to have_text 'Manage your work within an intuitive Boards view.'
-
-      next_button.click
-      expect(page)
-        .to have_text 'You can create multiple lists (columns) within one Board view, e.g. to create a KANBAN board.'
-
-      next_button.click
-      expect(page).to have_text 'Click the + will add a new card to the list within a Board.'
-
-      next_button.click
-      expect(page)
-        .to have_text 'Drag & Drop your cards within a list to re-order, or the another list. A double click will open the details view.'
+      step_through_onboarding_board_tour
 
       step_through_onboarding_main_menu_tour
     end
 
-    it "I don't see the board onboarding tour in the scrum project" do
+    it "I see the board onboarding tour in the scrum project" do
       # Set sessionStorage value so that the tour knows that it is in the scum tour
       page.execute_script("window.sessionStorage.setItem('openProject-onboardingTour', 'startMainTourFromBacklogs');");
+
       # Set the tour parameter so that we can start on the wp page
       visit "/projects/#{scrum_project.identifier}/work_packages?start_onboarding_tour=true"
 
       step_through_onboarding_wp_tour scrum_project, wp_2
+
+      step_through_onboarding_board_tour
+
       step_through_onboarding_main_menu_tour
     end
   end
